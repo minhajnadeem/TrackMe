@@ -14,6 +14,11 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.mj.minhajlib.trackme.model.UserModel;
 import com.mj.minhajlib.trackme.utils.Utils;
 
 import static android.os.Build.VERSION_CODES.M;
@@ -26,10 +31,14 @@ public class MyService extends Service implements LocationListener {
 
     private final int MIN_TIME = 1000 * 3;
     private final int MIN_DISTANCE = 1;
+    private final String DB_REF = "users";
     private LocationManager mLocationManager;
     private String mGpsProvider;
     private Utils mUtils;
 
+    //firebase
+    private DatabaseReference mDatabaseReference;
+    private FirebaseUser mUser;
 
     @Nullable
     @Override
@@ -39,7 +48,7 @@ public class MyService extends Service implements LocationListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d("tracker","service started");
+        Log.d("tracker", "service started");
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
@@ -52,21 +61,23 @@ public class MyService extends Service implements LocationListener {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d("tracker","service created");
+        Log.d("tracker", "service created");
+        mUser = FirebaseAuth.getInstance().getCurrentUser();
+        mDatabaseReference = FirebaseDatabase.getInstance().getReference(DB_REF).child(mUser.getUid());
         mUtils = new Utils(getApplicationContext());
         mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-        if (mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
+        if (mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
             mGpsProvider = LocationManager.NETWORK_PROVIDER;
         }
-        if (mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+        if (mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             mGpsProvider = LocationManager.GPS_PROVIDER;
         }
-        Log.d("tracker",mGpsProvider);
+        Log.d("tracker", mGpsProvider);
     }
 
     @Override
     public void onDestroy() {
-        Log.d("tracker","service destroyed");
+        Log.d("tracker", "service destroyed");
         mLocationManager.removeUpdates(this);
         mUtils.setPref(false);
         super.onDestroy();
@@ -74,7 +85,13 @@ public class MyService extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.d("tracker","location changed");
+        Log.d("tracker", "location changed");
+        String photoUrl = "";
+        if (mUser.getPhotoUrl() != null) {
+            photoUrl = mUser.getPhotoUrl().toString();
+        }
+        UserModel model = new UserModel(mUser.getDisplayName(), photoUrl, location.getLatitude(), location.getLongitude());
+        mDatabaseReference.setValue(model);
     }
 
     @Override
@@ -84,11 +101,11 @@ public class MyService extends Service implements LocationListener {
 
     @Override
     public void onProviderEnabled(String s) {
-        Log.d("tracker",s+" enabled");
+        Log.d("tracker", s + " enabled");
     }
 
     @Override
     public void onProviderDisabled(String s) {
-        Log.d("tracker",s+" disabled");
+        Log.d("tracker", s + " disabled");
     }
 }

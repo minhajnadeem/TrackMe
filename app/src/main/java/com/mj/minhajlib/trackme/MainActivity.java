@@ -95,7 +95,6 @@ public class MainActivity extends AppCompatActivity {
                 onButtonClick();
             }
         });
-        //startTrackingMe();
         mAuth = FirebaseAuth.getInstance();
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -109,6 +108,10 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+
+        if (mUtils.getPref()){
+            startTrackingMe();
+        }
     }
 
     private void onButtonClick() {

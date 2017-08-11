@@ -6,9 +6,10 @@ package com.mj.minhajlib.trackme.model;
 
 public class UserModel {
 
-    private String name,profile,lat,lan;
+    private String name,profile;
+    private double lat,lan;
 
-    public UserModel(String name,String profile,String lat,String lan){
+    public UserModel(String name,String profile,double lat,double lan){
         setName(name);
         setProfile(profile);
         setLat(lat);
@@ -31,19 +32,19 @@ public class UserModel {
         this.profile = profile;
     }
 
-    public String getLat() {
+    public double getLat() {
         return lat;
     }
 
-    public void setLat(String lat) {
+    public void setLat(double lat) {
         this.lat = lat;
     }
 
-    public String getLan() {
+    public double getLan() {
         return lan;
     }
 
-    public void setLan(String lan) {
+    public void setLan(double lan) {
         this.lan = lan;
     }
 }
